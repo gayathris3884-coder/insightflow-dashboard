@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>InsightFlow | Project Overview</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#4fdbc8",
+            "on-primary": "#003731",
+            "primary-container": "#14b8a6",
+            "secondary": "#adc6ff",
+            "on-secondary": "#002e6a",
+            "tertiary": "#ffb59e",
+            "error": "#ffb4ab",
+            "surface": "#051424",
+            "surface-container": "#122131",
+            "surface-container-low": "#0d1c2d",
+            "surface-container-high": "#1c2b3c",
+            "surface-container-highest": "#273647",
+            "on-surface": "#d4e4fa",
+            "on-surface-variant": "#bbcac6",
+            "outline-variant": "#3c4947",
+            "background": "#051424",
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0B1120; color: #d4e4fa; font-family: 'Inter', sans-serif; }
+    .custom-glass {
+      background: #1E293B;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .custom-glass:hover { transform: translateY(-2px); border-color: rgba(79,219,200,0.2); }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .trend-up { color: #4fdbc8; }
+    .trend-down { color: #ffb4ab; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #051424; }
+    ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #273647; }
+
+    /* Upload drag zone */
+    .upload-zone {
+      border: 2px dashed rgba(79,219,200,0.3);
+      transition: all 0.2s ease;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: #4fdbc8;
+      background: rgba(79,219,200,0.05);
+    }
+
+    /* Nav active */
+    .nav-active {
+      color: #4fdbc8;
+      border-left: 3px solid #4fdbc8;
+      background: rgba(79,219,200,0.08);
+    }
+
+    /* Insight card pulse */
+    @keyframes pulse-border {
+      0%, 100% { border-left-color: #4fdbc8; }
+      50% { border-left-color: rgba(79,219,200,0.4); }
+    }
+    .insight-pulse { animation: pulse-border 2s ease-in-out infinite; }
+
+    /* Loading spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 1s linear infinite; }
+
+    /* Toast */
+    #toast {
+      transition: all 0.3s ease;
+      transform: translateY(100px);
+      opacity: 0;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body class="overflow-hidden">
+
+<!-- Sidebar -->
+<aside class="w-[220px] h-screen fixed left-0 top-0 flex flex-col py-6 bg-[#0d1c2d] border-r border-[#3c4947] z-50">
+  <div class="px-5 mb-6 flex items-center gap-3">
+    <div class="w-8 h-8 bg-[#4fdbc8] rounded-lg flex items-center justify-center text-[#003731]">
+      <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">query_stats</span>
+    </div>
+    <div>
+      <span class="text-[18px] font-bold text-[#4fdbc8] leading-tight block">InsightFlow</span>
+      <span class="text-[10px] text-[#bbcac6] uppercase tracking-widest opacity-70">Analytics</span>
+    </div>
+  </div>
+
+  <nav class="flex-1 flex flex-col gap-1 px-2">
+    <a class="nav-active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer" onclick="setActive(this)">
+      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1;">home</span> Home
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#bbcac6] hover:bg-[#1c2b3c] hover:text-[#d4e4fa] transition-all cursor-pointer" onclick="setActive(this)">
+      <span class="material-symbols-outlined text-[20px]">analytics</span> Analysis
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#bbcac6] hover:bg-[#1c2b3c] hover:text-[#d4e4fa] transition-all cursor-pointer" onclick="setActive(this)">
+      <span class="material-symbols-outlined text-[20px]">psychology</span> AI Insights
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#bbcac6] hover:bg-[#1c2b3c] hover:text-[#d4e4fa] transition-all cursor-pointer" onclick="setActive(this)">
+      <span class="material-symbols-outlined text-[20px]">assessment</span> Reports
+    </a>
+    <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#bbcac6] hover:bg-[#1c2b3c] hover:text-[#d4e4fa] transition-all cursor-pointer" onclick="setActive(this)">
+      <span class="material-symbols-outlined text-[20px]">table_chart</span> Datasets
+    </a>
+  </nav>
+
+  <div class="px-4 mt-auto flex flex-col gap-1">
+    <div class="flex items-center gap-2 p-3 rounded-xl bg-[#122131]">
+      <div class="w-7 h-7 rounded-full bg-[#4fdbc8] flex items-center justify-center text-[#003731] text-xs font-bold">G</div>
+      <div>
+        <p class="text-xs font-semibold text-[#d4e4fa]">Gayathri S</p>
+        <p class="text-[10px] text-[#bbcac6]">Data Analyst</p>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Wrapper -->
+<div class="ml-[220px] flex flex-col h-screen overflow-hidden">
+
+  <!-- Top Nav -->
+  <header class="flex justify-between items-center px-6 w-full sticky top-0 z-40 h-14 bg-[#051424] border-b border-[#3c4947]">
+    <div class="flex items-center gap-4 flex-1">
+      <div class="relative w-full max-w-xs">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#bbcac6] text-[18px]">search</span>
+        <input class="w-full bg-[#0d1c2d] border border-[#3c4947] rounded-lg pl-9 pr-4 py-1.5 text-sm text-[#d4e4fa] focus:ring-1 focus:ring-[#4fdbc8] focus:border-[#4fdbc8] outline-none transition-all" placeholder="Search datasets..." type="text"/>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="openUploadModal()" class="flex items-center gap-1.5 px-4 py-1.5 bg-[#4fdbc8] text-[#003731] text-sm font-semibold rounded-lg hover:brightness-110 active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-[16px]">upload</span> Upload Dataset
+      </button>
+      <button class="p-2 text-[#bbcac6] hover:bg-[#1c2b3c] rounded-full transition-colors relative">
+        <span class="material-symbols-outlined">notifications</span>
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#ffb4ab] rounded-full"></span>
+      </button>
+      <button class="p-2 text-[#bbcac6] hover:bg-[#1c2b3c] rounded-full transition-colors">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="flex-1 overflow-y-auto p-6 bg-[#0B1120]">
+    <div class="max-w-[1400px] mx-auto space-y-5">
+
+      <!-- Page Header -->
+      <div class="flex items-end justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-[#d4e4fa]">Project Overview</h1>
+          <p class="text-sm text-[#bbcac6] mt-0.5">Dataset: <span class="text-[#4fdbc8] font-medium" id="dataset-name">sample_analytics_data.csv</span> · Last updated: <span id="last-updated">just now</span></p>
+        </div>
+        <div class="flex gap-2">
+          <div class="flex items-center gap-1.5 px-3 py-1.5 bg-[#122131] rounded-lg border border-[#3c4947] text-xs text-[#bbcac6]">
+            <span class="material-symbols-outlined text-[16px]">calendar_today</span> Oct 01 – Oct 31, 2024
+          </div>
+          <button class="p-1.5 bg-[#122131] rounded-lg border border-[#3c4947] hover:bg-[#1c2b3c] transition-colors">
+            <span class="material-symbols-outlined text-[#bbcac6]">filter_list</span>
+          </button>
+          <button onclick="refreshAll()" class="p-1.5 bg-[#122131] rounded-lg border border-[#3c4947] hover:bg-[#1c2b3c] transition-colors">
+            <span class="material-symbols-outlined text-[#bbcac6]" id="refresh-icon">refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="grid grid-cols-12 gap-5">
+
+        <!-- Left: Analytics Core -->
+        <div class="col-span-12 xl:col-span-9 space-y-5">
+
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="custom-glass p-4 rounded-xl">
+              <div class="flex justify-between items-start mb-3">
+                <span class="p-2 bg-[#4fdbc8]/10 text-[#4fdbc8] rounded-lg"><span class="material-symbols-outlined text-[20px]">database</span></span>
+                <span class="text-xs text-[#4fdbc8] flex items-center gap-0.5 font-medium">+12% <span class="material-symbols-outlined text-[13px]">trending_up</span></span>
+              </div>
+              <p class="text-[11px] text-[#bbcac6] uppercase tracking-wider font-medium">Total Records</p>
+              <h3 class="text-2xl font-bold text-[#d4e4fa] mt-1" id="kpi-records">1,284,042</h3>
+            </div>
+            <div class="custom-glass p-4 rounded-xl">
+              <div class="flex justify-between items-start mb-3">
+                <span class="p-2 bg-[#adc6ff]/10 text-[#adc6ff] rounded-lg"><span class="material-symbols-outlined text-[20px]">view_column</span></span>
+                <span class="text-xs text-[#bbcac6] flex items-center gap-0.5">No change</span>
+              </div>
+              <p class="text-[11px] text-[#bbcac6] uppercase tracking-wider font-medium">Columns</p>
+              <h3 class="text-2xl font-bold text-[#d4e4fa] mt-1" id="kpi-cols">48</h3>
+            </div>
+            <div class="custom-glass p-4 rounded-xl">
+              <div class="flex justify-between items-start mb-3">
+                <span class="p-2 bg-[#ffb59e]/10 text-[#ffb59e] rounded-lg"><span class="material-symbols-outlined text-[20px]">warning</span></span>
+                <span class="text-xs text-[#ffb4ab] flex items-center gap-0.5 font-medium">-5.2% <span class="material-symbols-outlined text-[13px]">trending_down</span></span>
+              </div>
+              <p class="text-[11px] text-[#bbcac6] uppercase tracking-wider font-medium">Missing Values</p>
+              <h3 class="text-2xl font-bold text-[#d4e4fa] mt-1" id="kpi-missing">0.4%</h3>
+            </div>
+            <div class="custom-glass p-4 rounded-xl">
+              <div class="flex justify-between items-start mb-3">
+                <span class="p-2 bg-[#ffb4ab]/10 text-[#ffb4ab] rounded-lg"><span class="material-symbols-outlined text-[20px]">error_outline</span></span>
+                <span class="text-xs text-[#4fdbc8] flex items-center gap-0.5 font-medium">+0.8% <span class="material-symbols-outlined text-[13px]">trending_up</span></span>
+              </div>
+              <p class="text-[11px] text-[#bbcac6] uppercase tracking-wider font-medium">Outliers Detected</p>
+              <h3 class="text-2xl font-bold text-[#d4e4fa] mt-1" id="kpi-outliers">14,203</h3>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            <!-- Line Chart -->
+            <div class="custom-glass p-5 rounded-xl flex flex-col" style="height:340px">
+              <div class="flex justify-between items-center mb-4">
+                <h4 class="text-base font-semibold text-[#d4e4fa]">Data Trend Analysis</h4>
+                <div class="flex gap-1">
+                  <button onclick="setChartPeriod('daily', this)" class="px-2 py-1 text-[11px] font-semibold bg-[#4fdbc8]/20 text-[#4fdbc8] rounded transition-all active-period">Daily</button>
+                  <button onclick="setChartPeriod('weekly', this)" class="px-2 py-1 text-[11px] font-medium text-[#bbcac6] hover:text-[#d4e4fa] rounded transition-all">Weekly</button>
+                  <button onclick="setChartPeriod('monthly', this)" class="px-2 py-1 text-[11px] font-medium text-[#bbcac6] hover:text-[#d4e4fa] rounded transition-all">Monthly</button>
+                </div>
+              </div>
+              <div class="flex-1 relative">
+                <canvas id="lineChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="custom-glass p-5 rounded-xl flex flex-col" style="height:340px">
+              <div class="flex justify-between items-center mb-4">
+                <h4 class="text-base font-semibold text-[#d4e4fa]">Category Comparison</h4>
+                <span class="material-symbols-outlined text-[#bbcac6] cursor-pointer hover:text-[#4fdbc8] transition-colors">more_horiz</span>
+              </div>
+              <div class="flex-1 relative">
+                <canvas id="barChart"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Data Table Preview -->
+          <div class="custom-glass rounded-xl overflow-hidden">
+            <div class="flex justify-between items-center px-5 py-3 border-b border-[#3c4947]">
+              <h4 class="text-sm font-semibold text-[#d4e4fa]">Dataset Preview</h4>
+              <span class="text-xs text-[#bbcac6]">Showing 5 of 1,284,042 rows</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="bg-[#0d1c2d] text-[#bbcac6] uppercase tracking-wider">
+                    <th class="px-5 py-2.5 text-left font-medium">ID</th>
+                    <th class="px-5 py-2.5 text-left font-medium">Category</th>
+                    <th class="px-5 py-2.5 text-left font-medium">Value</th>
+                    <th class="px-5 py-2.5 text-left font-medium">Region</th>
+                    <th class="px-5 py-2.5 text-left font-medium">Status</th>
+                    <th class="px-5 py-2.5 text-left font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body" class="divide-y divide-[#3c4947]">
+                  <tr class="hover:bg-[#1c2b3c] transition-colors">
+                    <td class="px-5 py-2.5 font-mono text-[#4fdbc8]">#10021</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">CAT_A</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">4,872.30</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">Region 4</td>
+                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 bg-[#4fdbc8]/10 text-[#4fdbc8] rounded-full">Active</span></td>
+                    <td class="px-5 py-2.5 text-[#bbcac6]">2024-10-01</td>
+                  </tr>
+                  <tr class="hover:bg-[#1c2b3c] transition-colors">
+                    <td class="px-5 py-2.5 font-mono text-[#4fdbc8]">#10022</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">CAT_B</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">9,113.88</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">Region 1</td>
+                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 bg-[#adc6ff]/10 text-[#adc6ff] rounded-full">Pending</span></td>
+                    <td class="px-5 py-2.5 text-[#bbcac6]">2024-10-03</td>
+                  </tr>
+                  <tr class="hover:bg-[#1c2b3c] transition-colors">
+                    <td class="px-5 py-2.5 font-mono text-[#4fdbc8]">#10023</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">CAT_D</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">12,400.00</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">Region 2</td>
+                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 bg-[#4fdbc8]/10 text-[#4fdbc8] rounded-full">Active</span></td>
+                    <td class="px-5 py-2.5 text-[#bbcac6]">2024-10-05</td>
+                  </tr>
+                  <tr class="hover:bg-[#1c2b3c] transition-colors">
+                    <td class="px-5 py-2.5 font-mono text-[#4fdbc8]">#10024</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">CAT_C</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">3,290.50</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">Region 3</td>
+                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 bg-[#ffb4ab]/10 text-[#ffb4ab] rounded-full">Outlier</span></td>
+                    <td class="px-5 py-2.5 text-[#bbcac6]">2024-10-07</td>
+                  </tr>
+                  <tr class="hover:bg-[#1c2b3c] transition-colors">
+                    <td class="px-5 py-2.5 font-mono text-[#4fdbc8]">#10025</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">CAT_E</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">7,601.75</td>
+                    <td class="px-5 py-2.5 text-[#d4e4fa]">Region 4</td>
+                    <td class="px-5 py-2.5"><span class="px-2 py-0.5 bg-[#4fdbc8]/10 text-[#4fdbc8] rounded-full">Active</span></td>
+                    <td class="px-5 py-2.5 text-[#bbcac6]">2024-10-09</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: AI Insights Panel -->
+        <div class="col-span-12 xl:col-span-3">
+          <div class="custom-glass rounded-xl flex flex-col sticky top-20 overflow-hidden" style="max-height: calc(100vh - 120px)">
+            <div class="p-4 border-b border-[#3c4947] flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#4fdbc8] text-[20px]" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
+                <h4 class="text-sm font-semibold text-[#d4e4fa]">AI Insights</h4>
+              </div>
+              <span class="bg-[#4fdbc8]/20 text-[#4fdbc8] px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">Gemini</span>
+            </div>
+
+            <div class="p-4 flex-1 overflow-y-auto space-y-3" id="insights-panel">
+              <!-- Insight 1 -->
+              <div class="bg-[#0d1c2d] p-3 rounded-lg border-l-4 border-[#4fdbc8] insight-pulse">
+                <h5 class="text-xs font-semibold text-[#4fdbc8] flex items-center gap-1 mb-1.5">
+                  <span class="material-symbols-outlined text-[15px]">trending_up</span> Anomalous Spike
+                </h5>
+                <p class="text-[12px] text-[#bbcac6] leading-relaxed">Transaction volume in <span class="text-[#d4e4fa] font-semibold">Region 4</span> increased by 42% over the last 24 hours, exceeding typical variance patterns.</p>
+                <button class="mt-2 text-[11px] text-[#4fdbc8] hover:underline flex items-center gap-0.5">Explore Source <span class="material-symbols-outlined text-[12px]">arrow_forward</span></button>
+              </div>
+
+              <!-- Insight 2 -->
+              <div class="bg-[#0d1c2d] p-3 rounded-lg border-l-4 border-[#adc6ff]">
+                <h5 class="text-xs font-semibold text-[#adc6ff] flex items-center gap-1 mb-1.5">
+                  <span class="material-symbols-outlined text-[15px]">cleaning_services</span> Data Quality
+                </h5>
+                <p class="text-[12px] text-[#bbcac6] leading-relaxed">84 duplicate records found in <span class="italic text-[#d4e4fa]">user_metadata_v2</span>. Removing them will improve accuracy by ~3.2%.</p>
+                <button class="mt-2 text-[11px] text-[#adc6ff] hover:underline flex items-center gap-0.5">Run Clean Up <span class="material-symbols-outlined text-[12px]">play_arrow</span></button>
+              </div>
+
+              <!-- Insight 3 -->
+              <div class="bg-[#0d1c2d] p-3 rounded-lg border-l-4 border-[#ffb59e]">
+                <h5 class="text-xs font-semibold text-[#ffb59e] flex items-center gap-1 mb-1.5">
+                  <span class="material-symbols-outlined text-[15px]">lightbulb</span> Forecast Alert
+                </h5>
+                <p class="text-[12px] text-[#bbcac6] leading-relaxed">Models predict a <span class="text-[#ffb4ab] font-semibold">15% drop</span> in categorical accuracy if current outlier trends continue for 7 more days.</p>
+              </div>
+
+              <!-- Insight 4 -->
+              <div class="bg-[#0d1c2d] p-3 rounded-lg border-l-4 border-[#4fdbc8]">
+                <h5 class="text-xs font-semibold text-[#4fdbc8] flex items-center gap-1 mb-1.5">
+                  <span class="material-symbols-outlined text-[15px]">category</span> Top Category
+                </h5>
+                <p class="text-[12px] text-[#bbcac6] leading-relaxed"><span class="text-[#d4e4fa] font-semibold">CAT_D</span> accounts for 38% of total volume, outperforming other categories by 2.4x this month.</p>
+              </div>
+
+              <!-- Confidence Score -->
+              <div class="bg-[#122131] p-3 rounded-lg">
+                <div class="flex justify-between items-center mb-1.5">
+                  <span class="text-[11px] text-[#bbcac6] font-medium">Model Confidence</span>
+                  <span class="text-[11px] text-[#4fdbc8] font-bold">94.2%</span>
+                </div>
+                <div class="w-full bg-[#1c2b3c] rounded-full h-1.5">
+                  <div class="bg-[#4fdbc8] h-1.5 rounded-full" style="width: 94.2%"></div>
+                </div>
+                <p class="text-[10px] text-[#bbcac6] mt-1.5 opacity-70">Powered by Gemini 2.5 Pro</p>
+              </div>
+            </div>
+
+            <div class="p-4 pt-0">
+              <button onclick="regenerateInsights()" class="w-full py-2 bg-[#122131] border border-[#3c4947] hover:border-[#4fdbc8]/50 text-[#d4e4fa] text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]" id="regen-icon">refresh</span> Regenerate Insights
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <footer class="flex flex-col md:flex-row items-center justify-between pt-4 pb-2 border-t border-[#3c4947] opacity-50">
+        <p class="text-[11px] text-[#bbcac6]">© 2026 Gayathri S · InsightFlow · Status: <span class="text-[#4fdbc8]">● Healthy</span></p>
+        <div class="flex gap-5">
+          <a class="text-[11px] text-[#bbcac6] hover:text-[#4fdbc8] transition-colors" href="#">Privacy</a>
+          <a class="text-[11px] text-[#bbcac6] hover:text-[#4fdbc8] transition-colors" href="#">Docs</a>
+          <a class="text-[11px] text-[#bbcac6] hover:text-[#4fdbc8] transition-colors" href="#">API Keys</a>
+        </div>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<!-- Upload Modal -->
+<div id="upload-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center" onclick="closeUploadModal(event)">
+  <div class="bg-[#122131] border border-[#3c4947] rounded-2xl p-6 w-[420px] shadow-2xl" onclick="event.stopPropagation()">
+    <div class="flex justify-between items-center mb-5">
+      <h3 class="text-base font-semibold text-[#d4e4fa]">Upload Dataset</h3>
+      <button onclick="closeUploadModal()" class="text-[#bbcac6] hover:text-[#d4e4fa]"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="upload-zone rounded-xl p-8 text-center cursor-pointer mb-4" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+      <span class="material-symbols-outlined text-[#4fdbc8] text-[40px] mb-2 block">cloud_upload</span>
+      <p class="text-sm font-medium text-[#d4e4fa]">Drop your CSV file here</p>
+      <p class="text-xs text-[#bbcac6] mt-1">or click to browse</p>
+      <p class="text-[10px] text-[#bbcac6] mt-3 opacity-60">Supports CSV, XLSX · Max 100MB</p>
+    </div>
+    <input type="file" id="file-input" class="hidden" accept=".csv,.xlsx" onchange="handleFile(this)"/>
+    <div id="file-info" class="hidden bg-[#0d1c2d] rounded-lg p-3 mb-4 flex items-center gap-3">
+      <span class="material-symbols-outlined text-[#4fdbc8]">description</span>
+      <div class="flex-1">
+        <p class="text-sm text-[#d4e4fa] font-medium" id="file-name">file.csv</p>
+        <p class="text-xs text-[#bbcac6]" id="file-size">0 KB</p>
+      </div>
+      <button onclick="clearFile()" class="text-[#bbcac6] hover:text-[#ffb4ab]"><span class="material-symbols-outlined text-[18px]">close</span></button>
+    </div>
+    <button onclick="analyzeFile()" class="w-full py-2.5 bg-[#4fdbc8] text-[#003731] text-sm font-semibold rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2" id="analyze-btn">
+      <span class="material-symbols-outlined text-[18px]">auto_awesome</span> Analyze with AI
+    </button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-6 right-6 z-[200] flex items-center gap-3 px-4 py-3 bg-[#122131] border border-[#4fdbc8]/30 rounded-xl shadow-2xl">
+  <span class="material-symbols-outlined text-[#4fdbc8] text-[20px]">check_circle</span>
+  <p class="text-sm text-[#d4e4fa] font-medium" id="toast-msg">Dataset analyzed successfully!</p>
+</div>
+
+<script>
+// ─── Charts ───────────────────────────────────────────────────
+const chartDefaults = {
+  color: '#bbcac6',
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#bbcac6', font: { size: 11 } } },
+    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#bbcac6', font: { size: 11 } } }
+  }
+};
+
+const dailyData = [120,145,132,178,156,210,195,240,228,265,250,290,275,310,305,340,320,380,360,400,385,420,440,390,430,460,445,500,480,520];
+const weeklyData = [820,950,1100,1280,1450];
+const monthlyData = [4200,5100,6300,7800,9200,10500];
+
+let lineChart, barChart, currentPeriod = 'daily';
+
+function buildLineChart(data, labels) {
+  if (lineChart) lineChart.destroy();
+  const ctx = document.getElementById('lineChart').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 250);
+  grad.addColorStop(0, 'rgba(79,219,200,0.3)');
+  grad.addColorStop(1, 'rgba(79,219,200,0)');
+  lineChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor: '#4fdbc8',
+        backgroundColor: grad,
+        borderWidth: 2.5,
+        pointRadius: 3,
+        pointBackgroundColor: '#4fdbc8',
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false, animation: { duration: 600 } }
+  });
+}
+
+function buildBarChart() {
+  if (barChart) barChart.destroy();
+  const ctx = document.getElementById('barChart').getContext('2d');
+  barChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['CAT_A', 'CAT_B', 'CAT_C', 'CAT_D', 'CAT_E'],
+      datasets: [{
+        data: [6200, 8850, 4500, 12400, 7600],
+        backgroundColor: ['rgba(79,219,200,0.5)','rgba(173,198,255,0.5)','rgba(255,181,158,0.5)','rgba(79,219,200,0.8)','rgba(173,198,255,0.6)'],
+        borderColor: ['#4fdbc8','#adc6ff','#ffb59e','#4fdbc8','#adc6ff'],
+        borderWidth: 1.5,
+        borderRadius: 6
+      }]
+    },
+    options: { ...chartDefaults, responsive: true, maintainAspectRatio: false, animation: { duration: 600 } }
+  });
+}
+
+function setChartPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll('.active-period').forEach(b => {
+    b.classList.remove('bg-[#4fdbc8]/20', 'text-[#4fdbc8]', 'active-period');
+    b.classList.add('text-[#bbcac6]');
+  });
+  btn.classList.add('bg-[#4fdbc8]/20', 'text-[#4fdbc8]', 'active-period');
+  btn.classList.remove('text-[#bbcac6]');
+
+  if (period === 'daily') buildLineChart(dailyData, Array.from({length:30},(_,i)=>`Oct ${i+1}`));
+  else if (period === 'weekly') buildLineChart(weeklyData, ['Week 1','Week 2','Week 3','Week 4','Week 5']);
+  else buildLineChart(monthlyData, ['May','Jun','Jul','Aug','Sep','Oct']);
+}
+
+// ─── Nav ───────────────────────────────────────────────────────
+function setActive(el) {
+  document.querySelectorAll('nav a').forEach(a => {
+    a.classList.remove('nav-active');
+    a.classList.add('text-[#bbcac6]');
+  });
+  el.classList.add('nav-active');
+  el.classList.remove('text-[#bbcac6]');
+}
+
+// ─── Upload Modal ──────────────────────────────────────────────
+function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); }
+function closeUploadModal(e) {
+  if (!e || e.target === document.getElementById('upload-modal'))
+    document.getElementById('upload-modal').classList.add('hidden');
+}
+function dragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+function dragLeave() { document.getElementById('drop-zone').classList.remove('drag-over'); }
+function dropFile(e) { e.preventDefault(); dragLeave(); if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]); }
+function handleFile(input) { if (input.files[0]) processFile(input.files[0]); }
+
+function processFile(file) {
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
+  document.getElementById('file-info').classList.remove('hidden');
+  document.getElementById('dataset-name').textContent = file.name;
+}
+
+function clearFile() {
+  document.getElementById('file-info').classList.add('hidden');
+  document.getElementById('file-input').value = '';
+}
+
+function analyzeFile() {
+  const btn = document.getElementById('analyze-btn');
+  btn.innerHTML = '<span class="material-symbols-outlined text-[18px] spinner">refresh</span> Analyzing...';
+  btn.disabled = true;
+  setTimeout(() => {
+    closeUploadModal();
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">auto_awesome</span> Analyze with AI';
+    btn.disabled = false;
+    document.getElementById('last-updated').textContent = 'just now';
+    showToast('Dataset analyzed successfully!');
+    animateKPIs();
+  }, 2000);
+}
+
+// ─── KPI Animation ─────────────────────────────────────────────
+function animateKPIs() {
+  const targets = { 'kpi-records': '1,301,847', 'kpi-cols': '52', 'kpi-missing': '0.3%', 'kpi-outliers': '15,120' };
+  Object.entries(targets).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    el.style.color = '#4fdbc8';
+    el.textContent = val;
+    setTimeout(() => el.style.color = '', 1000);
+  });
+}
+
+// ─── Refresh ───────────────────────────────────────────────────
+function refreshAll() {
+  const icon = document.getElementById('refresh-icon');
+  icon.classList.add('spinner');
+  setTimeout(() => {
+    icon.classList.remove('spinner');
+    buildBarChart();
+    setChartPeriod(currentPeriod, document.querySelector('.active-period'));
+    showToast('Dashboard refreshed!');
+  }, 1000);
+}
+
+// ─── Regenerate Insights ───────────────────────────────────────
+const insightSets = [
+  [
+    { color: '#4fdbc8', icon: 'trending_up', title: 'Anomalous Spike', body: 'Transaction volume in <span class="text-[#d4e4fa] font-semibold">Region 4</span> increased by 42% over the last 24 hours, exceeding typical variance patterns.', action: 'Explore Source' },
+    { color: '#adc6ff', icon: 'cleaning_services', title: 'Data Quality', body: '84 duplicate records found in <span class="italic text-[#d4e4fa]">user_metadata_v2</span>. Removing them will improve accuracy by ~3.2%.', action: 'Run Clean Up' },
+    { color: '#ffb59e', icon: 'lightbulb', title: 'Forecast Alert', body: 'Models predict a <span class="text-[#ffb4ab] font-semibold">15% drop</span> in categorical accuracy if current outlier trends continue for 7 more days.', action: null },
+    { color: '#4fdbc8', icon: 'category', title: 'Top Category', body: '<span class="text-[#d4e4fa] font-semibold">CAT_D</span> accounts for 38% of total volume, outperforming other categories by 2.4x this month.', action: null },
+  ],
+  [
+    { color: '#4fdbc8', icon: 'speed', title: 'Performance Peak', body: 'Processing throughput reached a new high of <span class="text-[#d4e4fa] font-semibold">98,340 records/sec</span> — 23% above baseline.', action: 'View Details' },
+    { color: '#ffb59e', icon: 'warning', title: 'Missing Data Alert', body: 'Column <span class="italic text-[#d4e4fa]">user_age</span> has 1,240 nulls (0.09%). Imputation recommended before model training.', action: 'Auto-fill' },
+    { color: '#adc6ff', icon: 'insights', title: 'Correlation Found', body: '<span class="text-[#d4e4fa] font-semibold">CAT_B × Region 1</span> shows a 0.87 Pearson correlation — strong positive linear relationship.', action: null },
+    { color: '#4fdbc8', icon: 'thumb_up', title: 'Quality Score', body: 'Overall dataset quality score improved to <span class="text-[#4fdbc8] font-semibold">91/100</span> after last cleanup run.', action: null },
+  ]
+];
+let insightIdx = 0;
+
+function regenerateInsights() {
+  const icon = document.getElementById('regen-icon');
+  icon.classList.add('spinner');
+  setTimeout(() => {
+    icon.classList.remove('spinner');
+    insightIdx = (insightIdx + 1) % insightSets.length;
+    const panel = document.getElementById('insights-panel');
+    const set = insightSets[insightIdx];
+    panel.innerHTML = set.map(ins => `
+      <div class="bg-[#0d1c2d] p-3 rounded-lg border-l-4" style="border-color:${ins.color}">
+        <h5 class="text-xs font-semibold flex items-center gap-1 mb-1.5" style="color:${ins.color}">
+          <span class="material-symbols-outlined text-[15px]">${ins.icon}</span> ${ins.title}
+        </h5>
+        <p class="text-[12px] text-[#bbcac6] leading-relaxed">${ins.body}</p>
+        ${ins.action ? `<button class="mt-2 text-[11px] hover:underline flex items-center gap-0.5" style="color:${ins.color}">${ins.action} <span class="material-symbols-outlined text-[12px]">arrow_forward</span></button>` : ''}
+      </div>
+    `).join('') + `
+      <div class="bg-[#122131] p-3 rounded-lg">
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-[11px] text-[#bbcac6] font-medium">Model Confidence</span>
+          <span class="text-[11px] text-[#4fdbc8] font-bold">${(90 + Math.random()*8).toFixed(1)}%</span>
+        </div>
+        <div class="w-full bg-[#1c2b3c] rounded-full h-1.5">
+          <div class="bg-[#4fdbc8] h-1.5 rounded-full" style="width:${90+Math.random()*8}%"></div>
+        </div>
+        <p class="text-[10px] text-[#bbcac6] mt-1.5 opacity-70">Powered by Gemini 2.5 Pro</p>
+      </div>
+    `;
+    showToast('Insights regenerated!');
+  }, 1200);
+}
+
+// ─── Toast ─────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ─── Init ──────────────────────────────────────────────────────
+window.onload = () => {
+  buildLineChart(dailyData, Array.from({length:30},(_,i)=>`Oct ${i+1}`));
+  buildBarChart();
+};
+</script>
+</body>
+</html>
